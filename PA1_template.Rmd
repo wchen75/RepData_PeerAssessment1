@@ -1,25 +1,100 @@
 ---
-title: "Reproducible Research: Peer Assessment 1"
-output: 
-  html_document:
-    keep_md: true
+title: "Reproducible Research: Course Project 1"
+author: "William Chen"
+date: "December 11, 2016"
+output: html_document
 ---
 
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
 
-## Loading and preprocessing the data
+## 1. Reading in the dataset "Activity monitoring data"
+
+use read.csv to read the csv file activity.csv to create mydata
+
+```{r Activity monitoring data }
+mydata <- read.csv("activity.csv")
+
+```
+
+## 2. Histogram the steps
+
+sum mydata to get steps per day to mydata1 then histogram the steps by day
+
+```{r }
+mydata1<-aggregate(steps~date,data=mydata, sum,na.rm=TRUE)
+hist(mydata1$steps,main = "Total number of steps per day", xlab = "Steps per day")
+```
+
+## 3. Mean/median of the steps
+
+use mean and median function to get the mean/median of the steps
+
+```{r }
+mean(mydata1$steps);median(mydata1$steps)
+```
+
+## 4.What is the average daily activity pattern?  
+
+aggregate mydata by mean of the interval to mydata2, plot mydata2
+
+```{r }
+mydata2<-aggregate(steps~interval,data=mydata, mean,na.rm=TRUE)
+plot(mydata2,type = "l",xlab="5-minute interval", ylab="All days")
+```
+
+## 5.Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?
+
+get the max position from mydata2 and add to the plot
+
+```{r }
+mydata2[which.max(mydata2$steps),1]
+#mydata2<-aggregate(steps~interval,data=mydata, mean,na.rm=TRUE)
+plot(mydata2,type = "l",xlab="5-minute interval", ylab="All days")
+abline(v = mydata2[which.max(mydata2$steps),1], col="blue", lwd=3, lty=1)
+text(mydata2[which.max(mydata2$steps),1],200,labels="max", pos=4, col="blue")
+```
+
+## 6.Code to describe and show a strategy for imputing missing data
+
+create mydat3 from mydata
+find all the NA
+assign all the NA to mean
+get mean/median
+
+```{r }
+mydata3 <- mydata
+mydatana<-is.na(mydata3$steps)
+sum(mydatana)
+mydata3$steps[mydatana]<-mean(mydata3$steps, na.rm = TRUE)
+mydata4<-aggregate(steps~date,data=mydata3, sum,na.rm=TRUE)
+mean(mydata4$steps);median(mydata4$steps)
+```
+
+## 7.Histogram of the total number of steps taken each day after missing values are imputed
 
 
+```{r }
+par(mfcol = c(1, 2))
+hist(mydata1$steps,main = "Total # of steps per day (with NA) ", xlab = "Steps per day")
+hist(mydata4$steps,main = "Total # of steps per day (with imputed NA)", xlab = "Steps per day")
+```
 
-## What is mean total number of steps taken per day?
+## 8.Panel plot comparing the average number of steps taken per 5-minute interval across weekdays and weekends
 
+subet those days in weekdays to mydata5weekday, weekend to mydata5weekend
+aggregate mydata5weekday and mydata5weekend for the mean
+plot mydata5weekday1 and mydata5weekend1
 
+```{r }
+mydata5weekday <- subset(mydata3, weekdays(as.Date(mydata3$date)) %in% c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday"))
+mydata5weekend <- subset(mydata3, weekdays(as.Date(mydata3$date)) %in% c("Saturday","Sunday"))
+mydata5weekday1<-aggregate(steps~interval,data=mydata5weekday, mean,na.rm=TRUE)
+mydata5weekend1<-aggregate(steps~interval,data=mydata5weekend, mean,na.rm=TRUE)
+par(mfcol = c(2, 1))
+plot(mydata5weekday1,type = "l",xlab="5-minute interval", ylab="Average number of steps", main="weekdays")
+plot(mydata5weekend1,type = "l",xlab="5-minute interval", ylab="Average number of steps",main="weekend")
+```
 
-## What is the average daily activity pattern?
-
-
-
-## Imputing missing values
-
-
-
-## Are there differences in activity patterns between weekdays and weekends?
+this is the end of the file.
